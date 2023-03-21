@@ -136,6 +136,31 @@ function step(timestamp) {
     window.requestAnimationFrame(step);
 }
 
+/* function för att rita om upgrades */
+
+function drawUpgrades() {
+    upgradeList.innerHTML = '';
+    upgrades.forEach((upgrade) => {
+        upgradeList.appendChild(createCard(upgrade));
+    });
+}
+
+/* återföds */
+function rebirth(modifier) {
+    money = 0;
+    moneyPerClick = 1;
+    moneyPerSecond = 0;
+    acquiredUpgrades = 0;
+    last = 0;
+    numberOfClicks = 0;
+    active = false;
+    upgrades = upgrades.map((upgrade) => {
+        upgrade.acquired = false;
+        upgrade.cost = upgrade.cost * modifier;
+        return upgrade;
+    });
+    drawUpgrades();
+}
 /* Här använder vi en listener igen. Den här gången så lyssnar iv efter window
  * objeket och när det har laddat färdigt webbsidan(omvandlat html till dom)
  * När detta har skett så skapar vi listan med upgrades, för detta använder vi
@@ -148,9 +173,7 @@ function step(timestamp) {
  * Efter det så kallas requestAnimationFrame och spelet är igång.
  */
 window.addEventListener('load', (event) => {
-    upgrades.forEach((upgrade) => {
-        upgradeList.appendChild(createCard(upgrade));
-    });
+    drawUpgrades();
     window.requestAnimationFrame(step);
 });
 
@@ -182,6 +205,12 @@ upgrades = [
         cost: 1000,
         amount: 100,
     },
+    {
+        name: 'Bulldozer',
+        description: 'Återföds som en bulldozer',
+        cost: 10000,
+        rebirth: 2,
+    },
 ];
 
 /* createCard är en funktion som tar ett upgrade objekt som parameter och skapar
@@ -210,6 +239,8 @@ function createCard(upgrade) {
     const cost = document.createElement('p');
     if (upgrade.amount) {
         header.textContent = `${upgrade.name}, +${upgrade.amount} per sekund.`;
+    } else if (upgrade.description) {
+        header.textContent = `${upgrade.name}. ${upgrade.description}.`;
     } else {
         header.textContent = `${upgrade.name}, +${upgrade.clicks} per klick.`;
     }
@@ -224,6 +255,9 @@ function createCard(upgrade) {
             moneyPerSecond += upgrade.amount ? upgrade.amount : 0;
             moneyPerClick += upgrade.clicks ? upgrade.clicks : 0;
             message('Grattis du har köpt en uppgradering!', 'success');
+            if (upgrade.rebirth) {
+                rebirth(upgrade.rebirth);
+            }
         } else {
             message('Du har inte råd.', 'warning');
         }
