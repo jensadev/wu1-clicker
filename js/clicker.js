@@ -105,13 +105,6 @@ const createStoreCardUpgrade = (upgrade) => {
   return cardElement
 }
 
-/* Message visar hur vi kan skapa ett html element och ta bort det.
- * appendChild används för att lägga till och removeChild för att ta bort.
- * Detta görs med en timer.
- * Läs mer:
- * https://developer.mozilla.org/en-US/docs/Web/API/Node/removeChild
- * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout
- */
 const message = (text, type) => {
   const p = document.createElement("p")
   p.classList.add(type)

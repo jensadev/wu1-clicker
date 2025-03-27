@@ -148,5 +148,12 @@ Läs mer:
 
 #### Skapa kort för byggnader och uppgraderingar
 
+Kort förklaring.
+
 #### Skapa alert med messages
 
+För att skapa ett HTML-element och ta bort det efter en viss tid kan vi använda `appendChild` för att lägga till elementet i DOM och `removeChild` för att ta bort det. Detta kan kombineras med en timer för att automatisera borttagningen.
+
+Läs mer:
+- [Node.removeChild - MDN](https://developer.mozilla.org/en-US/docs/Web/API/Node/removeChild)
+- [setTimeout - MDN](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout)

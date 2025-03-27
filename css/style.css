@@ -11,6 +11,10 @@
   text-align: center;
 }
 
+ul {
+  padding: 0;
+}
+
 
 /* knappstilar */
 button {
