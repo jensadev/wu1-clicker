@@ -58,3 +58,95 @@ Se classroom.
 GLHF!
 
 Tack [Malte](https://github.com/Mafrans) för lite ideér.
+
+## Javascript koncept för att förstå koden
+
+I den ordning de förekommer i koden.
+
+### Importera från andra filer
+
+Genom att använda `import` kan vi importera funktioner och klasser från andra filer. För att det ska fungera måste filen vi importerar från exportera det vi vill använda.
+
+```javascript
+import { Cookie } from "./cookie.js";
+```
+
+```javascript
+export const Cookie = 4
+```
+
+### Variabler, let och const
+
+`let` och `const` används för att deklarera variabler. `let` används för variabler som kan ändras, medan `const` används för konstanter som inte kan ändras.
+
+### Välja element från DOM (Document Object Model)
+
+Med `document.querySelector(selector)` kan vi hämta det element vi behöver från HTML-dokumentet. Vi sparar elementen i `const`-variabler eftersom vi inte kommer att ändra deras värden. 
+
+Läs mer:
+- [const - MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/const)
+- [querySelector - MDN](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector)
+
+**Viktigt:**  
+- `querySelector` returnerar det första matchande HTML-elementet på sidan.  
+- Om du behöver välja flera element, använd `querySelectorAll()`, som returnerar en lista av matchande element.
+
+Elementet matchas med en CSS-selektor, som i detta fall är `'#clicker-button'`. Men du kan använda andra selektorer, som klassnamn eller taggar.
+
+```javascript
+const clickerButton = document.querySelector('#clicker-button');
+```
+
+### Event Listeners
+
+Med ett valt element, som exempelvis en knapp, kan vi använda `addEventListener` för att lyssna på specifika händelser, som ett klick, på HTML-elementet. Detta är en central del av hur klickerknappen i spelet fungerar.
+
+När vi lyssnar på händelsen `'click'`, anger vi en callback-funktion som körs varje gång händelsen inträffar. I detta fall används en anonym funktion som callback. Inuti funktionen läggs `moneyPerClick` till variabeln `money` för varje klick.
+
+Läs mer: [addEventListener - MDN](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener)
+
+```javascript
+clickerButton.addEventListener('click', function() {
+    money += moneyPerClick;
+});
+```
+
+### Räkna tid och uppdatera spelet
+
+För att driva clicker-spelet används metoden `requestAnimationFrame`.  
+Denna metod försöker uppdatera spelet i takt med användarens skärms uppdateringsfrekvens, vanligtvis 60 gånger per sekund.  
+
+Läs mer: [requestAnimationFrame - MDN](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame)  
+
+Funktionen `step` används som en callback till `requestAnimationFrame`.  
+Det är denna funktion som ansvarar för att uppdatera spelets text och pengar.  
+I slutet av funktionen anropas den på nytt för att fortsätta uppdateringen.
+
+```javascript
+const step = (timestamp) => {
+    moneyDisplay.textContent = money;
+    requestAnimationFrame(step);
+}
+requestAnimationFrame(step);
+```
+
+### Att skapa nya element och lägga till dem i DOM
+Funktionerna `CreateCard`, som förekommer i olika typer i koden, tar ett objekt som parameter och genererar HTML-kod för det. För att skapa nya HTML-element används metoden `document.createElement()`. De skapade elementen lagras i variabler för att kunna ändra på dem.
+
+Klasser kan läggas till dessa element med `classList.add()`, och text kan tilldelas elementet med `textContent = 'värde'`.
+
+En event-lyssnare kopplas till kortet, där logiken för att köpa en uppgradering implementeras. Texten på elementen ändras med `textContent` för att visa att uppgraderingen köpts. Texten skriver vi ut med en text literal för att inkludera variabler. Syntaxen är `${variabel}`.
+
+Slutligen läggs kortets innehåll till i kortet självt, och elementet returneras. Det använder vi för att lägga till kortet i DOM med `appendChild()`.
+
+Läs mer:
+- [Document.createElement - MDN](https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement)
+- [Element.classList - MDN](https://developer.mozilla.org/en-US/docs/Web/API/Element/classList)
+- [Node.textContent - MDN](https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent)
+- [Node.appendChild - MDN](https://developer.mozilla.org/en-US/docs/Web/API/Node/appendChild)
+- [String - MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+#### Skapa kort för byggnader och uppgraderingar
+
+#### Skapa alert med messages
+
