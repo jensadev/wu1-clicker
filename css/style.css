@@ -81,11 +81,9 @@ button {
   border: none;
 }
 
-.bubbly-button {
+.particle-button, .particle-button-box {
   display: inline-block;
-  padding: 1em 2em;
-  margin-top: 100px;
-  margin-bottom: 60px;
+  padding: .5rem 1rem;
   -webkit-appearance: none;
   appearance: none;
   background-color: #ff0081;
@@ -97,10 +95,15 @@ button {
   transition: transform ease-in 0.1s, box-shadow ease-in 0.25s;
   box-shadow: 0 2px 25px rgba(255, 0, 130, 0.5);
 }
-.bubbly-button:focus {
+
+.box {
+  background-color: transparent;
+}
+
+.particle-button:focus {
   outline: 0;
 }
-.bubbly-button:before, .bubbly-button:after {
+.particle-button:before, .particle-button:after, .particle-button-box:before, .particle-button-box:after {
   position: absolute;
   content: "";
   display: block;
@@ -111,31 +114,56 @@ button {
   transition: all ease-in-out 0.5s;
   background-repeat: no-repeat;
 }
-.bubbly-button:before {
+.particle-button:before {
   display: none;
   top: -75%;
   background-image: radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, transparent 20%, #ff0081 20%, transparent 30%), radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, transparent 10%, #ff0081 15%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%);
   background-size: 10% 10%, 20% 20%, 15% 15%, 20% 20%, 18% 18%, 10% 10%, 15% 15%, 10% 10%, 18% 18%;
 }
-.bubbly-button:after {
+.particle-button:after {
   display: none;
   bottom: -75%;
   background-image: radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, transparent 10%, #ff0081 15%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%);
   background-size: 15% 15%, 20% 20%, 18% 18%, 20% 20%, 15% 15%, 10% 10%, 20% 20%;
 }
-.bubbly-button:active {
+
+.particle-button-box:before {
+  display: none;
+  top: -75%;
+  background-image: radial-gradient(circle, #333 20%, transparent 20%), radial-gradient(circle, transparent 20%, #333 20%, transparent 30%), radial-gradient(circle, #333 20%, transparent 20%), radial-gradient(circle, #333 20%, transparent 20%), radial-gradient(circle, transparent 10%, #333 15%, transparent 20%), radial-gradient(circle, #333 20%, transparent 20%), radial-gradient(circle, #333 20%, transparent 20%), radial-gradient(circle, #333 20%, transparent 20%), radial-gradient(circle, #333 20%, transparent 20%);
+  background-size: 10% 10%, 20% 20%, 15% 15%, 20% 20%, 18% 18%, 10% 10%, 15% 15%, 10% 10%, 18% 18%;
+}
+.particle-button-box:after {
+  display: none;
+  bottom: -75%;
+  background-image: radial-gradient(circle, #333 20%, transparent 20%), radial-gradient(circle, #333 20%, transparent 20%), radial-gradient(circle, transparent 10%, #333 15%, transparent 20%), radial-gradient(circle, #333 20%, transparent 20%), radial-gradient(circle, #333 20%, transparent 20%), radial-gradient(circle, #333 20%, transparent 20%), radial-gradient(circle, #333 20%, transparent 20%);
+  background-size: 15% 15%, 20% 20%, 18% 18%, 20% 20%, 15% 15%, 10% 10%, 20% 20%;
+}
+
+
+.particle-button:active {
   transform: scale(0.9);
   background-color: #e60074;
   box-shadow: 0 2px 25px rgba(255, 0, 130, 0.2);
 }
-.bubbly-button.animate:before {
+.particle-button.animate:before {
   display: block;
   animation: topBubbles ease-in-out 0.75s forwards;
 }
-.bubbly-button.animate:after {
+.particle-button.animate:after {
   display: block;
   animation: bottomBubbles ease-in-out 0.75s forwards;
 }
+
+.an:before {
+  display: block;
+  animation: topBubbles ease-in-out 2s infinite reverse;
+}
+.an:after {
+  display: block;
+  animation: bottomBubbles ease-in-out 2s infinite reverse;
+}
+
 
 @keyframes topBubbles {
   0% {
