@@ -5,22 +5,92 @@
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer
  */
-export const upgrades = [
+const upgrades = [
   {
-      icon: "pan_tool_alt_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg",
-      name: "Förstärkt pekfinger",
-      cost: 1000,
-      perSecond: 1,
-      lore: "Kraftigt, benigt och brutalt",
-      description: "Varje klick är extra effektivt"
+    icon: "solar_power_48dp_1F1F1F_FILL0_wght400_GRAD0_opsz48.svg",
+    name: "Solpaneler",
+    cost: 5000,
+    perSecond: -5,
+    lore: "Effektiva och miljövänliga",
+    description: "Minskar CO2-utsläpp per sekund",
+    weatherEffects: {
+      sunny: { multiplier: 1.5 },
+      stormy: { multiplier: 0.5 },
+      snowy: { multiplier: 0.5 },
+      foggy: { multiplier: 0.6 },
+    },
+  },
+  {
+    icon: "wind_power_48dp_1F1F1F_FILL0_wght400_GRAD0_opsz48.svg",
+    name: "Vindkraftverk",
+    cost: 10000,
+    perSecond: -10,
+    lore: "Kraftfulla och hållbara",
+    description: "Ger en konstant minskning av CO2-utsläpp",
+    weatherEffects: {
+      stormy: { multiplier: 0.5 },
+      snowy: { multiplier: 0.7 },
+    },
+  },
+  {
+    icon: "park_48dp_1F1F1F_FILL0_wght400_GRAD0_opsz48.svg",
+    name: "Trädplantering",
+    cost: 3000,
+    perSecond: -3,
+    lore: "Gröna och livsviktiga",
+    description: "Ökar CO2-infångningen per sekund",
+  },
+  {
+    icon: "co2_48dp_1F1F1F_FILL0_wght400_GRAD0_opsz48.svg",
+    name: "Koldioxidinfångning",
+    cost: 15000,
+    perSecond: -15,
+    lore: "Avancerad teknologi",
+    description: "Fångar in CO2 direkt från luften",
+    weatherEffects: {},
   },
 ]
 
-export const buildings = [
+const buildings = [
   {
-    name: "Flådig muspekare",
-    perClick: 1,
-    cost: 20,
-    costFactor: 1.5
-  }
+    name: "Bil",
+    perClick: 2,
+    cost: 50,
+    costFactor: 1.3,
+    lore: "Transporterar människor men släpper ut CO2",
+    icon: "directions_car_48dp_1F1F1F_FILL0_wght400_GRAD0_opsz48.svg",
+    description: "Ökar CO2-utsläpp per klick",
+  },
+  {
+    name: "Fabrik",
+    perClick: 5,
+    cost: 100,
+    costFactor: 1.5,
+    lore: "Producerar varor men släpper ut CO2",
+    description: "Ökar CO2-utsläpp per klick",
+    icon: "factory_48dp_1F1F1F_FILL0_wght400_GRAD0_opsz48.svg",
+  },
+  {
+    name: "Vindkraftverk",
+    perClick: -1,
+    cost: 200,
+    costFactor: 1.7,
+    lore: "Producerar ren energi",
+    description: "Minskar CO2-utsläpp per klick",
+    icon: "wind_power_48dp_1F1F1F_FILL0_wght400_GRAD0_opsz48.svg",
+  },
+  {
+    name: "Solpanel",
+    perClick: -2,
+    cost: 300,
+    costFactor: 1.8,
+    lore: "Producerar ren energi",
+    description: "Minskar koldioxidutsläpp per klick",
+    icon: "solar_power_48dp_1F1F1F_FILL0_wght400_GRAD0_opsz48.svg",
+  },
 ]
+
+upgrades.sort((a, b) => a.cost - b.cost);
+buildings.sort((a, b) => a.cost - b.cost);
+
+export { upgrades, buildings }
