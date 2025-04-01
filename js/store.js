@@ -10,7 +10,7 @@ const upgrades = [
     icon: "solar_power_48dp_1F1F1F_FILL0_wght400_GRAD0_opsz48.svg",
     name: "Solpaneler",
     cost: 5000,
-    perSecond: -5,
+    moneyPerSecond: -5,
     lore: "Effektiva och miljövänliga",
     description: "Minskar CO2-utsläpp per sekund",
     weatherEffects: {
@@ -24,7 +24,7 @@ const upgrades = [
     icon: "wind_power_48dp_1F1F1F_FILL0_wght400_GRAD0_opsz48.svg",
     name: "Vindkraftverk",
     cost: 10000,
-    perSecond: -10,
+    moneyPerSecond: -10,
     lore: "Kraftfulla och hållbara",
     description: "Ger en konstant minskning av CO2-utsläpp",
     weatherEffects: {
@@ -36,7 +36,7 @@ const upgrades = [
     icon: "park_48dp_1F1F1F_FILL0_wght400_GRAD0_opsz48.svg",
     name: "Trädplantering",
     cost: 3000,
-    perSecond: -3,
+    moneyPerSecond: -3,
     lore: "Gröna och livsviktiga",
     description: "Ökar CO2-infångningen per sekund",
   },
@@ -44,7 +44,7 @@ const upgrades = [
     icon: "co2_48dp_1F1F1F_FILL0_wght400_GRAD0_opsz48.svg",
     name: "Koldioxidinfångning",
     cost: 15000,
-    perSecond: -15,
+    moneyPerSecond: -15,
     lore: "Avancerad teknologi",
     description: "Fångar in CO2 direkt från luften",
     weatherEffects: {},
@@ -54,7 +54,8 @@ const upgrades = [
 const buildings = [
   {
     name: "Bil",
-    perClick: 2,
+    moneyPerClick: 2,
+    carbonPerClick: 1,
     cost: 50,
     costFactor: 1.3,
     lore: "Transporterar människor men släpper ut CO2",
@@ -63,7 +64,7 @@ const buildings = [
   },
   {
     name: "Fabrik",
-    perClick: 5,
+    moneyPerClick: 5,
     cost: 100,
     costFactor: 1.5,
     lore: "Producerar varor men släpper ut CO2",
@@ -72,7 +73,7 @@ const buildings = [
   },
   {
     name: "Vindkraftverk",
-    perClick: -1,
+    moneyPerClick: -1,
     cost: 200,
     costFactor: 1.7,
     lore: "Producerar ren energi",
@@ -81,7 +82,7 @@ const buildings = [
   },
   {
     name: "Solpanel",
-    perClick: -2,
+    moneyPerClick: -2,
     cost: 300,
     costFactor: 1.8,
     lore: "Producerar ren energi",

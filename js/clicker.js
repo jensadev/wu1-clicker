@@ -24,8 +24,9 @@ let acquiredUpgrades = 0
 let numberOfClicks = 0
 let weatherInterval = 60000
 let lastWeather = 0
-let carbon = 0
+let carbon = 1000
 let carbonPerSecond = 5
+let carbonPerClick = 0
 
 /* Funktioner */
 
@@ -58,6 +59,8 @@ const createStoreCard = (type, content) => {
     if (money >= content.cost) {
       acquiredUpgrades += 1
       money -= content.cost
+      moneyPerClick += content.moneyPerClick || 0
+      carbonPerSecond += content.carbonPerSecond || 0
       content.cost *= content.costFactor
       costElement.textContent = `Köp för ${content.cost} ${moneyName}`
       message(`Grattis du har köpt ${content.name}`, "success")
@@ -101,6 +104,8 @@ const step = (timestamp) => {
   moneyDisplay.textContent = Math.round(money);
   carbonDisplay.textContent = Math.round(carbon);
 
+  carbon += carbonPerSecond / 1000
+
   if (timestamp >= last + 1000) {
     money += moneyPerSecond
     last = timestamp
@@ -139,8 +144,9 @@ clickerButton.addEventListener("click", () => {
   clickerButton.classList.remove("animate")
   clickerButton.classList.add("animate")
   setTimeout(() => clickerButton.classList.remove("animate"), 700)
-  money += moneyPerClick;
-  numberOfClicks += 1;
+  money += moneyPerClick
+  carbon += carbonPerClick
+  numberOfClicks += 1
 }, false)
 
 /* Initiera spelet */

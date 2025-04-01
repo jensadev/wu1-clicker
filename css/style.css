@@ -86,14 +86,14 @@ button {
   padding: .5rem 1rem;
   -webkit-appearance: none;
   appearance: none;
-  background-color: #ff0081;
+  background-color: hsl(130, 100%, 50%);
   color: #fff;
   border-radius: 4px;
   border: none;
   cursor: pointer;
   position: relative;
   transition: transform ease-in 0.1s, box-shadow ease-in 0.25s;
-  box-shadow: 0 2px 25px rgba(255, 0, 130, 0.5);
+  box-shadow: 0 2px 25px hsla(129, 100%, 50%, 0.5);
 }
 
 .box {
@@ -117,13 +117,13 @@ button {
 .particle-button:before {
   display: none;
   top: -75%;
-  background-image: radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, transparent 20%, #ff0081 20%, transparent 30%), radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, transparent 10%, #ff0081 15%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%);
+  background-image: radial-gradient(circle, hsl(130, 100%, 50%) 20%, transparent 20%), radial-gradient(circle, transparent 20%, hsl(130, 100%, 50%) 20%, transparent 30%), radial-gradient(circle, hsl(130, 100%, 50%) 20%, transparent 20%), radial-gradient(circle, hsl(130, 100%, 50%) 20%, transparent 20%), radial-gradient(circle, transparent 10%, hsl(130, 100%, 50%) 15%, transparent 20%), radial-gradient(circle, hsl(130, 100%, 50%) 20%, transparent 20%), radial-gradient(circle, hsl(130, 100%, 50%) 20%, transparent 20%), radial-gradient(circle, hsl(130, 100%, 50%) 20%, transparent 20%), radial-gradient(circle, hsl(130, 100%, 50%) 20%, transparent 20%);
   background-size: 10% 10%, 20% 20%, 15% 15%, 20% 20%, 18% 18%, 10% 10%, 15% 15%, 10% 10%, 18% 18%;
 }
 .particle-button:after {
   display: none;
   bottom: -75%;
-  background-image: radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, transparent 10%, #ff0081 15%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%);
+  background-image: radial-gradient(circle, hsl(130, 100%, 50%) 20%, transparent 20%), radial-gradient(circle, hsl(130, 100%, 50%) 20%, transparent 20%), radial-gradient(circle, transparent 10%, hsl(130, 100%, 50%) 15%, transparent 20%), radial-gradient(circle, hsl(130, 100%, 50%) 20%, transparent 20%), radial-gradient(circle, hsl(130, 100%, 50%) 20%, transparent 20%), radial-gradient(circle, hsl(130, 100%, 50%) 20%, transparent 20%), radial-gradient(circle, #ff0081 20%, transparent 20%);
   background-size: 15% 15%, 20% 20%, 18% 18%, 20% 20%, 15% 15%, 10% 10%, 20% 20%;
 }
 
@@ -143,7 +143,7 @@ button {
 
 .particle-button:active {
   transform: scale(0.9);
-  background-color: #e60074;
+  background-color: hsl(130, 100%, 45%);
   box-shadow: 0 2px 25px rgba(255, 0, 130, 0.2);
 }
 .particle-button.animate:before {
