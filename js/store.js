@@ -64,7 +64,8 @@ const buildings = [
   },
   {
     name: "Fabrik",
-    moneyPerClick: 5,
+    moneyPerSecond: 2,
+    carbonPerSecond: 2,
     cost: 100,
     costFactor: 1.5,
     lore: "Producerar varor men släpper ut CO2",
@@ -73,7 +74,9 @@ const buildings = [
   },
   {
     name: "Vindkraftverk",
-    moneyPerClick: -1,
+    carbonPerClick: -1,
+    carbonPerSecond: -1,
+    moneyPerSecond: 2,
     cost: 200,
     costFactor: 1.7,
     lore: "Producerar ren energi",
@@ -82,7 +85,9 @@ const buildings = [
   },
   {
     name: "Solpanel",
-    moneyPerClick: -2,
+    carbonPerClick: -2,
+    carbonPerSecond: -1,
+    moneyPerSecond: 2,
     cost: 300,
     costFactor: 1.8,
     lore: "Producerar ren energi",

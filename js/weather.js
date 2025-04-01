@@ -75,6 +75,7 @@ const advanceWeatherCycle = () => {
   const currentWeather = getRandomWeather();
   console.log("Nuvarande väder:", currentWeather);
   // Uppdatera spelets logik baserat på det aktuella vädret
+  return currentWeather;
 }
 
 const applyWeatherEffects = (upgradeOrBuilding, currentWeather) => {
