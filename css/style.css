@@ -86,10 +86,10 @@ ul {
 
 .store li:hover {
     background-color: var(--color-light);
+}
 
-    .store-tooltip {
-        display: block;
-    }
+.store li:hover .store-tooltip {
+    display: block;
 }
 
 .store-info {
@@ -110,8 +110,7 @@ ul {
 
 .store-buildings button {
     width: 100%;
-    display: flex;
-    gap: 1rem;
+    text-align: left;
 }
 
 .store-tooltip {

@@ -18,7 +18,7 @@ resourceNameDisplay.textContent = resourceName
 
 /* Game state */
 let achievements = achievementList
-let resource = 46340
+let resource = 1000
 let resourcePerClick = 1
 let resourcePerSecond = 0
 let lastTimestamp = 0
@@ -93,9 +93,20 @@ const handlePurchase = (e, type, content, button) => {
 // Hjälpfunktion för att utföra köpet
 const processPurchase = (type, content) => {
     if (type === "building") {
-        acquiredBuildings.push(content);
+        const existingBuilding = acquiredBuildings.find(b => b.name === content.name);
+        if (existingBuilding) {
+            existingBuilding.count += 1;
+        } else {
+            acquiredBuildings.push({
+                name: content.name,
+                count: 1,
+                resourcePerClick: content.resourcePerClick || 0,
+                resourcePerSecond: content.resourcePerSecond || 0,
+            });
+        }
     } else if (type === "upgrade") {
         acquiredUpgrades.push(content);
+        applyUpgradeToBuildings(content);
     }
 
     resource -= content.cost;
@@ -106,6 +117,47 @@ const processPurchase = (type, content) => {
     const building = acquiredBuildings.find(b => b.name === content.name);
     if (building) {
         building.count += 1;
+    }
+};
+
+const applyUpgradeToBuildings = (upgrade) => {
+    acquiredBuildings.forEach((building) => {
+        if (building.name === upgrade.building) {
+            // Apply the upgrade's effect to the building's resource generation
+            if (building.resourcePerClick) {
+                building.resourcePerClick += building.resourcePerClick * upgrade.resourceEffect * building.count;
+            }
+            if (building.resourcePerSecond) {
+                building.resourcePerSecond += building.resourcePerSecond * upgrade.resourceEffect * building.count;
+            }
+        }
+    });
+
+    // Recalculate total resource rates
+    recalculateResourceRates();
+};
+
+const recalculateResourceRates = () => {
+    // Only reset the values affected by buildings
+    let newResourcePerClick = 0;
+    let newResourcePerSecond = 0;
+
+    // Iterate through acquired buildings and calculate their contributions
+    acquiredBuildings.forEach((building) => {
+        if (building.resourcePerClick) {
+            newResourcePerClick += building.resourcePerClick * building.count;
+        }
+        if (building.resourcePerSecond) {
+            newResourcePerSecond += building.resourcePerSecond * building.count;
+        }
+    });
+
+    // Update the resource rates only if they are affected
+    if (newResourcePerClick > 0) {
+        resourcePerClick = newResourcePerClick;
+    }
+    if (newResourcePerSecond > 0) {
+        resourcePerSecond = newResourcePerSecond;
     }
 };
 
@@ -122,26 +174,15 @@ const updateCostDisplay = (button, content) => {
 // Hjälpfunktion för att skapa en tooltip för byggnader och uppgraderingar
 // Tooltipen innehåller lore, beskrivning och kostnad
 const storeTooltip = (lore, description, cost) => {
-    const tooltip = createTooltipContainer();
-    tooltip.appendChild(createTooltipText(lore, "lore"));
-    tooltip.appendChild(createTooltipText(description, "description"));
-    tooltip.appendChild(createTooltipText(`Kostar ${cost} ${resourceName}`, "cost"));
+    const tooltip = document.createElement("div")
+    tooltip.classList.add("store-tooltip")
+    const data = [lore, description, `Kostar ${cost} ${resourceName}`]
+    data.forEach((text) => {
+        const textElement = document.createElement("p")
+        textElement.textContent = text
+        tooltip.appendChild(textElement)
+    })
     return tooltip;
-};
-
-// Hjälpfunktion för att skapa en tooltip-container
-const createTooltipContainer = () => {
-    const tooltip = document.createElement("div");
-    tooltip.classList.add("store-tooltip");
-    return tooltip;
-};
-
-// Hjälpfunktion för att skapa en tooltip-text
-const createTooltipText = (text, className) => {
-    const textElement = document.createElement("p");
-    textElement.textContent = text;
-    textElement.classList.add(className);
-    return textElement;
 };
 
 // funktion för att visa en meddelanderuta
@@ -186,6 +227,30 @@ const updateAchievements = () => {
     });
 };
 
+const createStatsCard = (title, value) => {
+    const statItem = document.createElement("li");
+    const p = document.createElement("p");
+    p.textContent = `${title}: ${Math.round(value)}`;
+    p.classList.add("stat-value");
+    statItem.appendChild(p);
+    return statItem
+}
+
+// Skapa en lista med stats
+
+const createStatsList = () => {
+    statsContainer.innerHTML = ""; // Rensa tidigare stats
+
+    const statsList = document.createElement("ul");
+    statsList.classList.add("stats-list");
+
+    statsList.appendChild(createStatsCard("Resurser per klick", resourcePerClick));
+    statsList.appendChild(createStatsCard("Köpta uppgraderingar", acquiredUpgrades.length));
+    statsList.appendChild(createStatsCard("Köpta byggnader", acquiredBuildings.length));
+
+    statsContainer.appendChild(statsList);
+}
+
 /* Spelloopen */
 const step = (timestamp) => {
     if (pause) {
@@ -194,6 +259,7 @@ const step = (timestamp) => {
     }
 
     resourceDisplay.textContent = Math.round(resource);
+    resourcePerSecondDisplay.textContent = Math.round(resourcePerSecond);
 
     // Uppdatera resurser per sekund
     if (timestamp >= lastTimestamp + 1000) {
@@ -203,6 +269,7 @@ const step = (timestamp) => {
     }
 
     updateAchievements();
+    createStatsList();
 
     window.requestAnimationFrame(step)
 }
@@ -229,6 +296,9 @@ window.addEventListener("load", (event) => {
     buildings.forEach((building) => {
         storeBuildingsList.appendChild(createStoreCard("building", building))
     })
+
+    // Skapa en lista med stats
+    createStatsList();
 
     // Starta spelet
     window.requestAnimationFrame(step)
