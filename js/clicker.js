@@ -18,7 +18,7 @@ resourceNameDisplay.textContent = resourceName
 
 /* Game state */
 let achievements = achievementList
-let resource = 1000
+let resource = 6000
 let resourcePerClick = 1
 let resourcePerSecond = 0
 let lastTimestamp = 0
@@ -135,10 +135,11 @@ const applyUpgradeToBuildings = (upgrade) => {
 
     // Recalculate total resource rates
     recalculateResourceRates();
+    console.log(acquiredBuildings)
+    console.log(acquiredUpgrades)
 };
 
 const recalculateResourceRates = () => {
-    // Only reset the values affected by buildings
     let newResourcePerClick = 0;
     let newResourcePerSecond = 0;
 
@@ -152,13 +153,9 @@ const recalculateResourceRates = () => {
         }
     });
 
-    // Update the resource rates only if they are affected
-    if (newResourcePerClick > 0) {
-        resourcePerClick = newResourcePerClick;
-    }
-    if (newResourcePerSecond > 0) {
-        resourcePerSecond = newResourcePerSecond;
-    }
+    // Update the resource rates
+    resourcePerClick = newResourcePerClick > 0 ? newResourcePerClick : resourcePerClick;
+    resourcePerSecond = newResourcePerSecond > 0 ? newResourcePerSecond : resourcePerSecond;
 };
 
 // Hjälpfunktion för att uppdatera kostnadsdisplayen
@@ -247,6 +244,9 @@ const createStatsList = () => {
     statsList.appendChild(createStatsCard("Resurser per klick", resourcePerClick));
     statsList.appendChild(createStatsCard("Köpta uppgraderingar", acquiredUpgrades.length));
     statsList.appendChild(createStatsCard("Köpta byggnader", acquiredBuildings.length));
+    acquiredBuildings.forEach((building) => {
+        statsList.appendChild(createStatsCard(`${building.name} (Antal)`, building.count));
+    });
 
     statsContainer.appendChild(statsList);
 }
