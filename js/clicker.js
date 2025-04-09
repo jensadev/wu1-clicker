@@ -1,264 +1,235 @@
+/* Ladda in moduler */
 import { buildings, upgrades } from "./store.js"
 import { achievementList } from "./achievements.js"
-import { advanceWeatherCycle } from "./weather.js"
 
 
 /* Konstanter och DOM referenser */
-const moneyName = "klimatpoäng"
-const clickerButton = document.querySelector("#click-button")
-const moneyDisplay = document.querySelector("#money-display")
-const moneyDisplayName = document.querySelector("#money-display-name")
-const buildingList = document.querySelector("#building-list")
-const upgradeList = document.querySelector("#upgrade-list")
-const carbonDisplay = document.querySelector("#carbon-display")
-const statsElement = document.querySelector("#stats")
-const upgradesDisplay = document.querySelector("#upgrades-display")
+const resourceName = "resurser"
+const gameButton = document.querySelector("#game-button")
+const resourceDisplay = document.querySelector("#resource")
+const resourceNameDisplay = document.querySelector("#resource-name")
+const resourcePerSecondDisplay = document.querySelector("#resource-per-second")
+const storeBuildingsList = document.querySelector("#building-list")
+const storeUpgradesList = document.querySelector("#upgrade-list")
+const statsContainer = document.querySelector("#stats")
+const upgradesContainer = document.querySelector("#upgrades")
 
-moneyDisplayName.textContent = moneyName
+resourceNameDisplay.textContent = resourceName
 
 /* Game state */
 let achievements = achievementList
-let money = 5000
-let moneyPerClick = 1
-let moneyPerSecond = 0
-let last = 0
-let acquiredUpgrades = 0
+let resource = 46340
+let resourcePerClick = 1
+let resourcePerSecond = 0
+let lastTimestamp = 0
 let numberOfClicks = 0
-let currentWeather = advanceWeatherCycle()
-let weatherInterval = 60000
-let lastWeather = 0
-let carbon = 1000
-let carbonPerSecond = 5
-let carbonPerClick = 0
 let acquiredBuildings = []
+let acquiredUpgrades = []
 let pause = false
 
 /* Funktioner */
 
+/* Skapa en lista med byggnader och uppgraderingar */
 const createStoreCard = (type, content) => {
-  const listItem = document.createElement("li")
-  const cardElement = document.createElement("button")
-  cardElement.classList.add("card")
-  if (content.icon) {
-    const imageElement = document.createElement("img")
-    const image = new Image()
-    image.src = `/assets/icons/${content.icon}`
-    imageElement.src = image.src
-    imageElement.alt = content.name
-    cardElement.appendChild(imageElement)
-  }
-  if (type === "building") {
-    const containerElement = document.createElement("div")
-    const headerElement = document.createElement("h3")
-    headerElement.classList.add("title")
-    headerElement.textContent = content.name
-    const costElement = document.createElement("p")
-    costElement.textContent = `Köp för ${content.cost} ${moneyName}.`
+    const listItem = document.createElement("li");
+    const button = createButton(content.icon);
 
-    containerElement.appendChild(headerElement)
-    containerElement.appendChild(costElement)
-    cardElement.appendChild(containerElement)
-  }
+    if (type === "building") {
+        const buildingDetails = createBuildingDetails(content);
+        button.appendChild(buildingDetails);
+    }
 
-  cardElement.addEventListener("click", (e) => {
-    if (money >= content.cost) {
-      acquiredUpgrades += 1
-      money -= content.cost
-      moneyPerClick += content.moneyPerClick || 0
-      moneyPerSecond += content.moneyPerSecond || 0
-      carbonPerClick += content.carbonPerClick || 0
-      carbonPerSecond += content.carbonPerSecond || 0
-      content.cost *= content.costFactor
-      const costElement = cardElement.querySelector("p")
-      if (!costElement) {
-        const newCostElement = document.createElement("p")
-        newCostElement.textContent = `Köp för ${content.cost} ${moneyName}`
-        cardElement.appendChild(newCostElement)
-      } else {
-        costElement.textContent = `Köp för ${content.cost} ${moneyName}`
-      }
-      const building = acquiredBuildings.find(b => b.name === content.name);
-      if (building) {
-        building.count += 1;
-      }
-      message(`Grattis du har köpt ${content.name}`, "success")
+    button.addEventListener("click", (e) => handlePurchase(e, type, content, button));
+    const tooltip = storeTooltip(content.lore, content.description, content.cost);
+    button.appendChild(tooltip);
+    listItem.appendChild(button);
+
+    return listItem;
+};
+
+// Hjälpfunktion för att skapa en knapp
+const createButton = (iconText) => {
+    const button = document.createElement("button");
+    button.classList.add("store-button");
+
+    const icon = document.createElement("div");
+    icon.textContent = iconText;
+    icon.classList.add("icon");
+    button.appendChild(icon);
+
+    return button;
+};
+
+// Hjälpfunktion för att skapa byggnadsdetaljer
+const createBuildingDetails = (content) => {
+    const container = document.createElement("div");
+
+    const header = document.createElement("h3");
+    header.classList.add("title");
+    header.textContent = content.name;
+
+    const cost = document.createElement("p");
+    cost.textContent = `Köp för ${content.cost} ${resourceName}.`;
+
+    container.appendChild(header);
+    container.appendChild(cost);
+
+    return container;
+};
+
+// Hjälpfunktion för att hantera köp av byggnader och uppgraderingar
+const handlePurchase = (e, type, content, button) => {
+    e.preventDefault();
+
+    if (resource >= content.cost) {
+        processPurchase(type, content);
+        updateCostDisplay(button, content);
+        message(`Du har köpt en ${content.name}.`, "success");
     } else {
-      message(`Du har inte råd med ${content.name}`, "warning")
+        message(`Du har inte råd med en ${content.name}.`, "error");
     }
-  });
-  const tooltip = storeTooltip(content.lore, content.description, content.cost)
-  cardElement.appendChild(tooltip)
-  listItem.appendChild(cardElement)
-  return listItem
-}
+};
 
+// Hjälpfunktion för att utföra köpet
+const processPurchase = (type, content) => {
+    if (type === "building") {
+        acquiredBuildings.push(content);
+    } else if (type === "upgrade") {
+        acquiredUpgrades.push(content);
+    }
+
+    resource -= content.cost;
+    resourcePerClick += content.resourcePerClick || 0;
+    resourcePerSecond += content.resourcePerSecond || 0;
+    content.cost *= content.costFactor;
+
+    const building = acquiredBuildings.find(b => b.name === content.name);
+    if (building) {
+        building.count += 1;
+    }
+};
+
+// Hjälpfunktion för att uppdatera kostnadsdisplayen
+const updateCostDisplay = (button, content) => {
+    let costElement = button.querySelector("p");
+    if (!costElement) {
+        costElement = document.createElement("p");
+        button.appendChild(costElement);
+    }
+    costElement.textContent = `Köp för ${Math.round(content.cost)} ${resourceName}`;
+};
+
+// Hjälpfunktion för att skapa en tooltip för byggnader och uppgraderingar
+// Tooltipen innehåller lore, beskrivning och kostnad
 const storeTooltip = (lore, description, cost) => {
-  const tooltip = document.createElement("div")
-  tooltip.classList.add("store-tooltip")
-  const loreElement = document.createElement("p")
-  loreElement.textContent = lore
-  const descriptionElement = document.createElement("p")
-  descriptionElement.textContent = description
-  const costElement = document.createElement("p")
-  costElement.textContent = `Kostar ${cost} ${moneyName}`
-  tooltip.appendChild(loreElement)
-  tooltip.appendChild(descriptionElement)
-  tooltip.appendChild(costElement)
-  return tooltip
-}
+    const tooltip = createTooltipContainer();
+    tooltip.appendChild(createTooltipText(lore, "lore"));
+    tooltip.appendChild(createTooltipText(description, "description"));
+    tooltip.appendChild(createTooltipText(`Kostar ${cost} ${resourceName}`, "cost"));
+    return tooltip;
+};
 
-const message = (text, type) => {
-  const p = document.createElement("p")
-  p.classList.add(type)
-  p.textContent = text
-  msgbox.appendChild(p)
-  // if (type === "achievement") audioAchievement.play()
-  setTimeout(() => { p.parentNode.removeChild(p) }, 2000)
-}
+// Hjälpfunktion för att skapa en tooltip-container
+const createTooltipContainer = () => {
+    const tooltip = document.createElement("div");
+    tooltip.classList.add("store-tooltip");
+    return tooltip;
+};
 
-const gameStats = (stats, element) => {
-  element.classList.add("stats")
-  const statsTitle = document.createElement("h3")
-  statsTitle.textContent = "Statistik"
-  const statsList = document.createElement("ul")
-  stats.forEach((stat) => {
-    const statItem = document.createElement("li")
-    statItem.textContent = `${stat.name}: ${stat.value}`
-    statsList.appendChild(statItem)
-  })
-  element.appendChild(statsTitle)
-  element.appendChild(statsList)
-  return element
-}
+// Hjälpfunktion för att skapa en tooltip-text
+const createTooltipText = (text, className) => {
+    const textElement = document.createElement("p");
+    textElement.textContent = text;
+    textElement.classList.add(className);
+    return textElement;
+};
 
-const updateBuildingList = (element) => {
-  element.innerHTML = ""
-  acquiredBuildings.forEach((building) => {
-    const buildingItem = document.createElement("li")
-    const buildingDescription = document.createElement("p")
-    buildingDescription.textContent = `${building.name} (${building.count})`
+// funktion för att visa en meddelanderuta
+// text är texten som ska visas
+// type är typen av meddelande, kopplat till css
+// duration är hur länge meddelandet ska visas i millisekunder
+const message = (text, type, duration = 2000) => {
+    const msgbox = document.querySelector("#msgbox");
 
-    const iconContainer = document.createElement("div")
-    iconContainer.classList.add("icon-container")
+    const messageElement = document.createElement("p");
+    messageElement.classList.add(type);
+    messageElement.textContent = text;
+    msgbox.appendChild(messageElement);
 
-    for (let i = 0; i < building.count; i++) {
-      const iconElement = document.createElement("img")
-      iconElement.src = `/assets/icons/${building.icon}`
-      iconElement.alt = building.name
-      iconElement.style.left = `${i * 20}px`
-      iconElement.classList.add("building-icon")
-      iconContainer.appendChild(iconElement)
-    }
+    // Ta bort meddelandet efter en viss tid
+    setTimeout(() => {
+        if (messageElement.parentNode) {
+            messageElement.parentNode.removeChild(messageElement);
+        }
+    }, duration);
+};
 
-    buildingItem.appendChild(iconContainer)
-    buildingItem.appendChild(buildingDescription)
-    element.appendChild(buildingItem)
-  })
-}
+// funktion för att uppdatera achievements
+const updateAchievements = () => {
+    achievements = achievements.filter((achievement) => {
+        if (achievement.acquired) return false
+
+        const meetsUpgradeRequirement =
+            achievement.requiredUpgrades && acquiredUpgrades.length >= achievement.requiredUpgrades
+        const meetsBuildingRequirement =
+            achievement.requiredBuildings && acquiredBuildings.length >= achievement.requiredBuildings
+        const meetsClickRequirement =
+            achievement.requiredClicks && numberOfClicks >= achievement.requiredClicks
+
+        if (meetsUpgradeRequirement || meetsBuildingRequirement || meetsClickRequirement) {
+            achievement.acquired = true
+            message(achievement.description, "info")
+            return false // Ta bort achievement från listan
+        }
+
+        return true // Behåll achievement i listan
+    });
+};
 
 /* Spelloopen */
-
 const step = (timestamp) => {
-  if (pause) {
-    window.requestAnimationFrame(step)
-    return
-  }
-  // update stats
-  moneyDisplay.textContent = Math.round(money);
-  carbonDisplay.textContent = Math.round(carbon);
-  // update stats thats changed
-  if (timestamp >= last + 1000) {
-    const stats = []
-    stats.push({ name: "Klimatpoäng per klick", value: moneyPerClick })
-    stats.push({ name: "Koldioxid per sekund", value: carbonPerSecond })
-    stats.push({ name: "Koldioxid per klick", value: carbonPerClick })
-    stats.push({ name: "Väder", value: currentWeather })
-    stats.push({ name: "Tid", value: Math.round(timestamp / 1000) })
-    stats.push({ name: "Vädret ändras om", value: Math.round((weatherInterval - (timestamp - lastWeather)) / 1000) })
-    stats.push({ name: "Tid sedan senaste klick", value: Math.round((timestamp - last) / 1000) })
-    // clear stats
-    statsElement.innerHTML = ""
-    gameStats(stats, statsElement)
-  }
-
-  if (timestamp >= last + 1000) {
-    money += moneyPerSecond
-    carbon += carbonPerSecond
-
-    // update list with purchased buildings
-    updateBuildingList(upgradesDisplay)
-
-    last = timestamp
-  }
-
-  if (timestamp >= lastWeather + weatherInterval) {
-    lastWeather = timestamp
-    currentWeather = advanceWeatherCycle()
-    // const weatherEffect = weatherTypes.find((type) => type.name === weather)
-    // if (weatherEffect) {
-    //   if (weatherEffect.effects.temperature) {
-    //     console.log(`The temperature is ${weatherEffect.effects.temperature} degrees`)
-    //   }
-    // }
-  }
-
-  achievements = achievements.filter((achievement) => {
-    if (achievement.acquired) return false
-
-    if ((achievement.requiredUpgrades && acquiredUpgrades >= achievement.requiredUpgrades) ||
-      (achievement.requiredClicks && numberOfClicks >= achievement.requiredClicks)) {
-      achievement.acquired = true;
-      message(achievement.description, "achievement");
-      return false;
+    if (pause) {
+        window.requestAnimationFrame(step)
+        return
     }
 
-    return true;
-  })
+    resourceDisplay.textContent = Math.round(resource);
 
-  window.requestAnimationFrame(step)
+    // Uppdatera resurser per sekund
+    if (timestamp >= lastTimestamp + 1000) {
+        resource += resourcePerSecond
+
+        lastTimestamp = timestamp
+    }
+
+    updateAchievements();
+
+    window.requestAnimationFrame(step)
 }
 
 /* Eventlyssnare */
 
-clickerButton.addEventListener("click", () => {
-  clickerButton.classList.remove("animate")
-  clickerButton.classList.add("animate")
-  setTimeout(() => clickerButton.classList.remove("animate"), 700)
-  money += moneyPerClick
-  carbon += carbonPerClick
-  numberOfClicks += 1
+gameButton.addEventListener("click", () => {
+    resource += resourcePerClick
+    numberOfClicks += 1
 }, false)
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "p") {
+        pause = !pause
+    }
+})
 
 /* Initiera spelet */
 
 window.addEventListener("load", (event) => {
-  upgrades.forEach((upgrade) => {
-    upgradeList.appendChild(createStoreCard("upgrade", upgrade));
-  })
-  buildings.forEach((building) => {
-    buildingList.appendChild(createStoreCard("building", building))
-    acquiredBuildings.push({ name: building.name, count: 0, icon: building.icon });
-  })
+    upgrades.forEach((upgrade) => {
+        storeUpgradesList.appendChild(createStoreCard("upgrade", upgrade));
+    })
+    buildings.forEach((building) => {
+        storeBuildingsList.appendChild(createStoreCard("building", building))
+    })
 
-  // updatestats
-  const stats = []
-  stats.push({ name: "Klimatpoäng per klick", value: moneyPerClick })
-  stats.push({ name: "Koldioxid per sekund", value: carbonPerSecond })
-  stats.push({ name: "Koldioxid per klick", value: carbonPerClick })
-  stats.push({ name: "Väder", value: currentWeather })
-  stats.push({ name: "Tid", value: 0 })
-  stats.push({ name: "Tid sedan senaste väder", value: 0 })
-  stats.push({ name: "Tid sedan senaste klick", value: 0 })
-
-  gameStats(stats, statsElement)
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "p") {
-      pause = !pause
-    }
-  })
-
-
-  // Starta spelet
-  window.requestAnimationFrame(step)
+    // Starta spelet
+    window.requestAnimationFrame(step)
 })
