@@ -18,15 +18,55 @@ const upgrades = [
     },
     {
         icon: "🏭",
-        name: "Automatiserade fabriker",
+        name: "Automagiserade fabriker",
         description: "Ökar fabrikproduktionen med 10%",
-        lore: "Fabrikerna är nu automatiserade",
-        cost: 5000,
-        costFactor: 1.5,
+        lore: "Fabrikerna är nu automagiserade.",
+        cost: 3000,
         building: "Fabrik",
+        costFactor: 1.5,
+        resourceFactor: 0.2,
+    },
+    {
+        icon: "🤖",
+        name: "Robot AI",
+        description: "Ökar robotproduktionen med 20%.",
+        lore: "Robotarna har nu artificiell intelligens och arbetar snabbare.",
+        cost: 5000,
+        costFactor: 1.6,
+        building: "Robot",
+        resourceFactor: 0.2,
+    },
+    {
+        icon: "🏢",
+        name: "Fabrikigare fabriker",
+        description: "Ökar fabrikproduktionen med 25%.",
+        lore: "Fabrik, mer verkstad.",
+        cost: 8000,
+        costFactor: 1.7,
+        building: "Fabrik",
+        resourceFactor: 0.25,
+    },
+    {
+        icon: "☀️",
+        name: "Starkare sol",
+        description: "Ökar solpanelernas produktion med 15%.",
+        lore: "Solen är starkare än någonsin.",
+        cost: 4000,
+        costFactor: 1.5,
+        building: "Solpaneler",
         resourceFactor: 0.15,
     },
-]
+    {
+        icon: "🔋",
+        name: "Batterilagring",
+        description: "Lagrar energi från solpanelerna och ökar produktionen med 20%.",
+        lore: "Batterier lagrar energi för att användas senare.",
+        cost: 7000,
+        costFactor: 1.6,
+        building: "Solpaneler",
+        resourceFactor: 0.2,
+    },
+];
 
 const buildings = [
     {
@@ -34,20 +74,28 @@ const buildings = [
         resourcePerClick: 1,
         cost: 50,
         costFactor: 1.3,
-        lore: "En robot som producerar saker",
-        description: "Ger pengar per klick",
+        lore: "Clickmaster 9000",
+        description: "En robot som ger dig extra kraft i varje klick",
     },
     {
         name: "Fabrik",
         resourcePerSecond: 2,
-        cost: 100,
+        cost: 200,
         costFactor: 1.5,
-        lore: "En fabrik som producerar varor",
-        description: "Ger pengar per sekund",
+        lore: "Fabrique de bäst",
+        description: "I fabriken produceras resurser per sekund",
     },
-]
+    {
+        name: "Solpaneler",
+        resourcePerSecond: 1.5,
+        cost: 300,
+        costFactor: 1.4,
+        lore: "Solkraft för framtiden",
+        description: "Solpaneler som genererar resurser per sekund med hjälp av solen.",
+    },
+];
 
 upgrades.sort((a, b) => a.cost - b.cost);
 buildings.sort((a, b) => a.cost - b.cost);
 
-export { upgrades, buildings }
+export { upgrades, buildings };

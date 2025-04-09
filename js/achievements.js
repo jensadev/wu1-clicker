@@ -4,13 +4,18 @@
 
 export const achievementList = [
     {
+        name: "Första klicket",
         description: "Oooo du klickade en gång!",
         requiredClicks: 1,
-        acquired: false,
     },
     {
+        name: "Första uppgraderingen",
         description: "Oooo du shoppar loss!",
         requiredUpgrades: 1,
-        acquired: false,
+    },
+    {
+        name: "Byggare",
+        description: "Du har byggt 10 byggnader!",
+        requiredBuildings: 10,
     }
 ]

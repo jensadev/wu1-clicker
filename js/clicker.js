@@ -23,8 +23,10 @@ let resourcePerClick = 1
 let resourcePerSecond = 0
 let lastTimestamp = 0
 let numberOfClicks = 0
-let acquiredBuildings = []
-let acquiredUpgrades = []
+let purchaseHistory = {
+    buildings: [],
+    upgrades: [],
+};
 let pause = false
 
 /* Funktioner */
@@ -32,10 +34,10 @@ let pause = false
 /* Skapa en lista med byggnader och uppgraderingar */
 const createStoreCard = (type, content) => {
     const listItem = document.createElement("li");
-    const button = createButton(content.icon);
+    const button = createStoreButton(content.icon);
 
     if (type === "building") {
-        const buildingDetails = createBuildingDetails(content);
+        const buildingDetails = createStoreBuildingDetails(content);
         button.appendChild(buildingDetails);
     }
 
@@ -48,7 +50,7 @@ const createStoreCard = (type, content) => {
 };
 
 // Hjälpfunktion för att skapa en knapp
-const createButton = (iconText) => {
+const createStoreButton = (iconText) => {
     const button = document.createElement("button");
     button.classList.add("store-button");
 
@@ -61,7 +63,7 @@ const createButton = (iconText) => {
 };
 
 // Hjälpfunktion för att skapa byggnadsdetaljer
-const createBuildingDetails = (content) => {
+const createStoreBuildingDetails = (content) => {
     const container = document.createElement("div");
 
     const header = document.createElement("h3");
@@ -83,21 +85,48 @@ const handlePurchase = (e, type, content, button) => {
 
     if (resource >= content.cost) {
         processPurchase(type, content);
-        updateCostDisplay(button, content);
+        // updateCostDisplay(button, content);
         message(`Du har köpt en ${content.name}.`, "success");
     } else {
         message(`Du har inte råd med en ${content.name}.`, "error");
     }
 };
 
-// Hjälpfunktion för att utföra köpet
+const calculateResourceRates = () => {
+    let newResourcePerClick = 1
+    let newResourcePerSecond = 0
+
+    // Calculate contributions from purchased buildings
+    purchaseHistory.buildings.forEach((building) => {
+        newResourcePerClick += (building.resourcePerClick || 0) * building.count;
+        newResourcePerSecond += (building.resourcePerSecond || 0) * building.count;
+    });
+
+    // Apply modifiers from upgrades
+    purchaseHistory.upgrades.forEach((upgrade) => {
+        purchaseHistory.buildings.forEach((building) => {
+            if (building.name === upgrade.building) {
+                if (building.resourcePerClick) {
+                    newResourcePerClick += building.resourcePerClick * upgrade.resourceFactor * building.count;
+                }
+                if (building.resourcePerSecond) {
+                    newResourcePerSecond += building.resourcePerSecond * upgrade.resourceFactor * building.count;
+                }
+            }
+        });
+    });
+
+    resourcePerClick = newResourcePerClick;
+    resourcePerSecond = newResourcePerSecond;
+};
+
 const processPurchase = (type, content) => {
     if (type === "building") {
-        const existingBuilding = acquiredBuildings.find(b => b.name === content.name);
+        let existingBuilding = purchaseHistory.buildings.find(b => b.name === content.name);
         if (existingBuilding) {
             existingBuilding.count += 1;
         } else {
-            acquiredBuildings.push({
+            purchaseHistory.buildings.push({
                 name: content.name,
                 count: 1,
                 resourcePerClick: content.resourcePerClick || 0,
@@ -105,57 +134,14 @@ const processPurchase = (type, content) => {
             });
         }
     } else if (type === "upgrade") {
-        acquiredUpgrades.push(content);
-        applyUpgradeToBuildings(content);
+        purchaseHistory.upgrades.push(content);
     }
 
     resource -= content.cost;
-    resourcePerClick += content.resourcePerClick || 0;
-    resourcePerSecond += content.resourcePerSecond || 0;
     content.cost *= content.costFactor;
 
-    const building = acquiredBuildings.find(b => b.name === content.name);
-    if (building) {
-        building.count += 1;
-    }
-};
-
-const applyUpgradeToBuildings = (upgrade) => {
-    acquiredBuildings.forEach((building) => {
-        if (building.name === upgrade.building) {
-            // Apply the upgrade's effect to the building's resource generation
-            if (building.resourcePerClick) {
-                building.resourcePerClick += building.resourcePerClick * upgrade.resourceEffect * building.count;
-            }
-            if (building.resourcePerSecond) {
-                building.resourcePerSecond += building.resourcePerSecond * upgrade.resourceEffect * building.count;
-            }
-        }
-    });
-
-    // Recalculate total resource rates
-    recalculateResourceRates();
-    console.log(acquiredBuildings)
-    console.log(acquiredUpgrades)
-};
-
-const recalculateResourceRates = () => {
-    let newResourcePerClick = 0;
-    let newResourcePerSecond = 0;
-
-    // Iterate through acquired buildings and calculate their contributions
-    acquiredBuildings.forEach((building) => {
-        if (building.resourcePerClick) {
-            newResourcePerClick += building.resourcePerClick * building.count;
-        }
-        if (building.resourcePerSecond) {
-            newResourcePerSecond += building.resourcePerSecond * building.count;
-        }
-    });
-
-    // Update the resource rates
-    resourcePerClick = newResourcePerClick > 0 ? newResourcePerClick : resourcePerClick;
-    resourcePerSecond = newResourcePerSecond > 0 ? newResourcePerSecond : resourcePerSecond;
+    // Recalculate resource rates
+    calculateResourceRates();
 };
 
 // Hjälpfunktion för att uppdatera kostnadsdisplayen
@@ -205,22 +191,29 @@ const message = (text, type, duration = 2000) => {
 // funktion för att uppdatera achievements
 const updateAchievements = () => {
     achievements = achievements.filter((achievement) => {
-        if (achievement.acquired) return false
+        if (achievement.acquired) return false;
 
+        // Check if the achievement requirements are met
         const meetsUpgradeRequirement =
-            achievement.requiredUpgrades && acquiredUpgrades.length >= achievement.requiredUpgrades
-        const meetsBuildingRequirement =
-            achievement.requiredBuildings && acquiredBuildings.length >= achievement.requiredBuildings
-        const meetsClickRequirement =
-            achievement.requiredClicks && numberOfClicks >= achievement.requiredClicks
+            achievement.requiredUpgrades &&
+            purchaseHistory.upgrades.length >= achievement.requiredUpgrades;
 
+        const meetsBuildingRequirement =
+            achievement.requiredBuildings &&
+            purchaseHistory.buildings.reduce((total, building) => total + building.count, 0) >=
+                achievement.requiredBuildings;
+
+        const meetsClickRequirement =
+            achievement.requiredClicks && numberOfClicks >= achievement.requiredClicks;
+
+        // If any requirement is met, mark the achievement as acquired
         if (meetsUpgradeRequirement || meetsBuildingRequirement || meetsClickRequirement) {
-            achievement.acquired = true
-            message(achievement.description, "info")
-            return false // Ta bort achievement från listan
+            achievement.acquired = true;
+            message(achievement.description, "info");
+            return false; // Remove the achievement from the unacquired list
         }
 
-        return true // Behåll achievement i listan
+        return true; // Keep the achievement in the unacquired list
     });
 };
 
@@ -234,22 +227,23 @@ const createStatsCard = (title, value) => {
 }
 
 // Skapa en lista med stats
-
 const createStatsList = () => {
-    statsContainer.innerHTML = ""; // Rensa tidigare stats
+    statsContainer.innerHTML = ""; // Clear previous stats
 
     const statsList = document.createElement("ul");
     statsList.classList.add("stats-list");
 
     statsList.appendChild(createStatsCard("Resurser per klick", resourcePerClick));
-    statsList.appendChild(createStatsCard("Köpta uppgraderingar", acquiredUpgrades.length));
-    statsList.appendChild(createStatsCard("Köpta byggnader", acquiredBuildings.length));
-    acquiredBuildings.forEach((building) => {
+    statsList.appendChild(createStatsCard("Resurser per sekund", resourcePerSecond));
+    statsList.appendChild(createStatsCard("Köpta uppgraderingar", purchaseHistory.upgrades.length));
+    statsList.appendChild(createStatsCard("Köpta byggnader", purchaseHistory.buildings.length));
+
+    purchaseHistory.buildings.forEach((building) => {
         statsList.appendChild(createStatsCard(`${building.name} (Antal)`, building.count));
     });
 
     statsContainer.appendChild(statsList);
-}
+};
 
 /* Spelloopen */
 const step = (timestamp) => {
@@ -297,9 +291,9 @@ window.addEventListener("load", (event) => {
         storeBuildingsList.appendChild(createStoreCard("building", building))
     })
 
+    calculateResourceRates()
     // Skapa en lista med stats
-    createStatsList();
-
+    createStatsList()
     // Starta spelet
     window.requestAnimationFrame(step)
 })
