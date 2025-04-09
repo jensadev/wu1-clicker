@@ -18,7 +18,7 @@ resourceNameDisplay.textContent = resourceName
 
 /* Game state */
 let achievements = achievementList
-let resource = 6000
+let resource = 0
 let resourcePerClick = 1
 let resourcePerSecond = 0
 let lastTimestamp = 0
@@ -92,17 +92,18 @@ const handlePurchase = (e, type, content, button) => {
     }
 };
 
+/* Funktion som beräknar resurser per klick och per sekund utifrån vilka byggnader och uppgraderingar som köpts */
 const calculateResourceRates = () => {
     let newResourcePerClick = 1
     let newResourcePerSecond = 0
 
-    // Calculate contributions from purchased buildings
+    // räkna ut resurser per klick och per sekund
     purchaseHistory.buildings.forEach((building) => {
         newResourcePerClick += (building.resourcePerClick || 0) * building.count;
         newResourcePerSecond += (building.resourcePerSecond || 0) * building.count;
     });
 
-    // Apply modifiers from upgrades
+    // lägg till uppgraderingar på byggnader som har köpts
     purchaseHistory.upgrades.forEach((upgrade) => {
         purchaseHistory.buildings.forEach((building) => {
             if (building.name === upgrade.building) {
@@ -120,6 +121,7 @@ const calculateResourceRates = () => {
     resourcePerSecond = newResourcePerSecond;
 };
 
+// Funktion som hanterar köp av byggnader och uppgraderingar
 const processPurchase = (type, content) => {
     if (type === "building") {
         let existingBuilding = purchaseHistory.buildings.find(b => b.name === content.name);
@@ -140,7 +142,7 @@ const processPurchase = (type, content) => {
     resource -= content.cost;
     content.cost *= content.costFactor;
 
-    // Recalculate resource rates
+    // Räkna ut resurser per klick och per sekund
     calculateResourceRates();
 };
 
@@ -193,7 +195,7 @@ const updateAchievements = () => {
     achievements = achievements.filter((achievement) => {
         if (achievement.acquired) return false;
 
-        // Check if the achievement requirements are met
+        // Kontrollera att kraven för en achivment är uppfyllda
         const meetsUpgradeRequirement =
             achievement.requiredUpgrades &&
             purchaseHistory.upgrades.length >= achievement.requiredUpgrades;
@@ -206,17 +208,18 @@ const updateAchievements = () => {
         const meetsClickRequirement =
             achievement.requiredClicks && numberOfClicks >= achievement.requiredClicks;
 
-        // If any requirement is met, mark the achievement as acquired
+        // Om en eller flera krav är uppfyllda, markera achievement som uppnådd
         if (meetsUpgradeRequirement || meetsBuildingRequirement || meetsClickRequirement) {
             achievement.acquired = true;
             message(achievement.description, "info");
-            return false; // Remove the achievement from the unacquired list
+            return false; // Ta bort achievement från listan
         }
 
-        return true; // Keep the achievement in the unacquired list
+        return true; // Behåll achievement i listan
     });
 };
 
+// Hjälpfunktion för att skapa stats-kort
 const createStatsCard = (title, value) => {
     const statItem = document.createElement("li");
     const p = document.createElement("p");
@@ -291,6 +294,7 @@ window.addEventListener("load", (event) => {
         storeBuildingsList.appendChild(createStoreCard("building", building))
     })
 
+    // Räkna ut resurser per klick och per sekund
     calculateResourceRates()
     // Skapa en lista med stats
     createStatsList()
