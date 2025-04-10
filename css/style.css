@@ -76,6 +76,13 @@ h3 {
     text-align: center;
 }
 
+.left {
+    background-image: url(../assets/images/left-bg.jpg);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
 #message-container {
     position: absolute;
     bottom: 5vh;
@@ -190,7 +197,7 @@ h3 {
 
 .game-button:hover {
     color: var(--color-light);
-    border: 2px solid var(--color-dark);
+    border: 2px solid var(--color-light);
 }
 
 .game-button:active>img {
