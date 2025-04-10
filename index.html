@@ -33,22 +33,31 @@
                     </li>
                 </template>
             </div>
+            <div id="purchased-buildings">
+                <h3>Köpta Byggnader</h3>
+                <ul class="building-list"></ul>
+                <template id="building-item-template">
+                    <li class="building-item">
+                        <span class="icon"></span>
+                    </li>
+                </template>
+            </div>
         </div>
         <div class="right store flow">
             <h2>Store</h2>
             <ul id="building-list" class="store-buildings"></ul>
             <template id="store-item-template">
                 <li class="store-item">
-                    <button class="store-button">
-                        <div class="icon"></div>
-                        <div class="details">
-                            <h3 class="title"></h3>
-                            <p class="cost"></p>
+                    <button class="store-item-button">
+                        <div class="store-item-icon"></div>
+                        <div class="store-item-details">
+                            <h3 class="store-item-title"></h3>
+                            <p class="store-item-cost"></p>
                         </div>
                     </button>
-                    <div class="tooltip">
-                        <p class="lore"></p>
-                        <p class="description"></p>
+                    <div class="store-tooltip">
+                        <p class="store-tooltip-lore"></p>
+                        <p class="store-tooltip-description"></p>
                     </div>
                 </li>
             </template>
@@ -57,9 +66,12 @@
     <footer>
         <p>Find the code on <a href="https://github.com/jensadev/wu1-clicker">Github</a>.</p>
     </footer>
-    <div id="msgbox">
+    <div id="message-container">
         <template id="message-template">
-            <p class="message"></p>
+            <div class="message">
+                <p class="message-icon"></p>
+                <p class="message-text"></p>
+            </div>
         </template>
     </div>
     <script type="module" src="js/clicker.js"></script>

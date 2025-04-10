@@ -2,7 +2,6 @@
 import { buildings } from "./store.js"
 import { achievementList } from "./achievements.js"
 
-
 /* Konstanter och DOM referenser */
 const resourceName = "resurser"
 const resourceDisplay = document.querySelector("#resource")
@@ -18,87 +17,71 @@ let resourcePerSecond = 0
 let lastTimestamp = 0
 let numberOfClicks = 0
 let purchaseHistory = {
-    buildings: [],
-    upgrades: [],
+    buildings: []
 }
 let pause = false
 
 /* Funktioner */
 
-// Skapa en html lista med byggnader
-const createStoreCard = (type, content) => {
+/* För att skapa en ny byggnad i butiken behöver vi skapa ett nytt html-element
+ * med hjälp av en template som vi definierat i html-filen.
+ */
+const createStoreCard = (content) => {
     const template = document.querySelector("#store-item-template");
-    const storeItem = template.content.cloneNode(true).querySelector(".store-item");
+    const storeItem = template.content.cloneNode(true).querySelector(".store-item")
 
-    // Populate the store item with content
-    const button = storeItem.querySelector(".store-button");
-    const icon = storeItem.querySelector(".icon");
-    const title = storeItem.querySelector(".title");
-    const cost = storeItem.querySelector(".cost");
-    const lore = storeItem.querySelector(".lore");
-    const description = storeItem.querySelector(".description");
+    storeItem.querySelector(".store-item-icon").textContent = content.icon
+    storeItem.querySelector(".store-item-title").textContent = content.name
+    storeItem.querySelector(".store-item-cost").textContent = `Köp för ${content.cost} ${resourceName}.`
+    storeItem.querySelector(".store-tooltip-lore").textContent = content.lore
+    storeItem.querySelector(".store-tooltip-description").textContent = content.description
+    
+    // För att genomföra ett köpa av en byggnad behöver vi koppla en lyssnare till en
+    // funktion som hanterar inköpet
+    const button = storeItem.querySelector(".store-item-button")
+    button.addEventListener("click", (e) => handlePurchase(e, content, button))
 
-    icon.textContent = content.icon;
-    title.textContent = content.name;
-    cost.textContent = `Köp för ${content.cost} ${resourceName}.`;
-    lore.textContent = content.lore;
-    description.textContent = content.description;
+    return storeItem
+}
 
-    // Add event listener for purchase
-    button.addEventListener("click", (e) => handlePurchase(e, type, content, button));
-
-    return storeItem;
-};
-
-// Hjälpfunktion för att hantera köp av byggnader och uppgraderingar
-const handlePurchase = (e, type, content, button) => {
-    e.preventDefault();
+const handlePurchase = (e, content, button) => {
+    e.preventDefault()
 
     if (resource >= content.cost) {
-        processPurchase(content);
-        updateCostDisplay(button, content);
-        message(`Du har köpt en ${content.name}.`, "success");
+        processPurchase(content)
+        updateCostDisplay(button, content)
+        playSound(document.querySelector("#swoosh"))
+        message(`Du har köpt en ${content.name}.`, "success", content.icon)
     } else {
-        message(`Du har inte råd med en ${content.name}.`, "error");
+        message(`Du har inte råd med en ${content.name}.`, "error")
     }
 };
 
 const processPurchase = (building) => {
-    let existingBuilding = purchaseHistory.buildings.find(b => b.name === building.name);
+    let existingBuilding = purchaseHistory.buildings.find(b => b.name === building.name)
     if (existingBuilding) {
-        existingBuilding.count += 1;
+        existingBuilding.count += 1
     } else {
         purchaseHistory.buildings.push({
             name: building.name,
             count: 1,
-            resourcePerClick: building.resourcePerClick || 0,
-            resourcePerSecond: building.resourcePerSecond || 0,
-        });
+            icon: building.icon,
+            cost: building.cost,
+        })
     }
 
-    resource -= building.cost;
-    building.cost = Math.round(building.cost * building.costFactor);
+    resource -= building.cost
+    building.cost = Math.round(building.cost * building.costFactor)
 
-    // Recalculate resource rates after the purchase
-    calculateResourceRates();
-};
+    updatedResourceRates(building.resourcePerClick, building.resourcePerSecond)
+    updatePurchasedBuildings()
+}
 
-const calculateResourceRates = () => {
-    let newResourcePerClick = 100000 // Base value for clicks
-    let newResourcePerSecond = 0; // Base value for resources per second
+const updatedResourceRates = (perClick, perSecond) => {
+    resourcePerClick += perClick || 0
+    resourcePerSecond += perSecond || 0
+}
 
-    // Calculate contributions from purchased buildings
-    purchaseHistory.buildings.forEach((building) => {
-        newResourcePerClick += (building.resourcePerClick || 0) * building.count;
-        newResourcePerSecond += (building.resourcePerSecond || 0) * building.count;
-    });
-
-    // Update global resource rates
-    resourcePerClick = newResourcePerClick;
-    resourcePerSecond = newResourcePerSecond;
-};
-
-// Hjälpfunktion för att uppdatera kostnadsdisplayen
 const updateCostDisplay = (button, content) => {
     let costElement = button.querySelector("p");
     if (!costElement) {
@@ -108,23 +91,22 @@ const updateCostDisplay = (button, content) => {
     costElement.textContent = `Köp för ${Math.round(content.cost)} ${resourceName}`;
 };
 
-// funktion för att visa en meddelanderuta
-// text är texten som ska visas
-// type är typen av meddelande, kopplat till css
-// duration är hur länge meddelandet ska visas i millisekunder
-const message = (text, type, duration = 2000) => {
-    const msgbox = document.querySelector("#msgbox")
+/* För att kunna visa meddelanden i spelet så skapar vi meddelande element
+ * utifrån en template i html-filen.
+ * Meddelandet visas i duration ms och tas sedan bort.
+ * Text är meddelandet, type är en css klass som bestämmer stilen
+ */
+const message = (text, type, icon, duration = 2000) => {
+    const messageContainer = document.querySelector("#message-container")
     const template = document.querySelector("#message-template")
 
-    // Vi använder här templaten i html filen för att skapa en ny meddelanderuta
     const messageElement = template.content.cloneNode(true).querySelector(".message")
     messageElement.classList.add(type)
-    messageElement.textContent = text
+    messageElement.querySelector(".message-text").textContent = text
+    messageElement.querySelector(".message-icon").textContent = "" || icon
 
-    // Fäst meddelandet i meddelanderutan
-    msgbox.appendChild(messageElement)
+    messageContainer.appendChild(messageElement)
 
-    // Efter duration så tar vi bort meddelandet
     setTimeout(() => {
         if (messageElement.parentNode) {
             messageElement.parentNode.removeChild(messageElement)
@@ -132,12 +114,18 @@ const message = (text, type, duration = 2000) => {
     }, duration)
 };
 
-// funktion för att uppdatera achievements
+const playSound = (audio) => {
+    audio.play()
+}
+
+/* För att uppdatera achievements så går vi igenom listan med achievements och
+ * kontrollerar om kraven är uppfyllda.
+ * Om kraven är uppfyllda så tar vi bort den från listan
+ */
 const updateAchievements = () => {
     achievements = achievements.filter((achievement) => {
         if (achievement.acquired) return false;
 
-        // Kontrollera att kraven för en achivment är uppfyllda
         const meetsBuildingRequirement =
             achievement.requiredBuildings &&
             purchaseHistory.buildings.reduce((total, building) => total + building.count, 0) >=
@@ -146,18 +134,29 @@ const updateAchievements = () => {
         const meetsClickRequirement =
             achievement.requiredClicks && numberOfClicks >= achievement.requiredClicks;
 
-        // Om en eller flera krav är uppfyllda, markera achievement som uppnådd
         if (meetsBuildingRequirement || meetsClickRequirement) {
-            achievement.acquired = true;
+            playSound(document.querySelector("#swoosh"));
             message(achievement.description, "info");
-            return false; // Ta bort achievement från listan
+            return false; // Klar, ta bort achievement från listan
         }
 
         return true; // Behåll achievement i listan
     });
 };
 
-// Hjälpfunktion för att skapa stats-kort
+/* För att skapa en lista med stats så används en funktion, kopplar till en
+ * template i html-filen.
+ * Vi skapar en lista med stats och lägger till den i containern.
+ */ 
+const createStatsList = () => {
+    const statsList = document.querySelector(".stats-list")
+    statsList.innerHTML = "" // Rensa tidigare stats genom att tömma containern
+
+    statsList.appendChild(createStatsCard("Totala resurser", resource))
+    statsList.appendChild(createStatsCard("Resurser per klick", resourcePerClick))
+    statsList.appendChild(createStatsCard("Resurser per sekund", resourcePerSecond))
+};
+
 const createStatsCard = (title, value) => {
     const template = document.querySelector("#stats-item-template")
     const statItem = template.content.cloneNode(true).querySelector(".stats-item")
@@ -168,31 +167,43 @@ const createStatsCard = (title, value) => {
     return statItem;
 }
 
-// Skapa en lista med stats
-const createStatsList = () => {
-    const statsList = document.querySelector(".stats-list")
-    statsList.innerHTML = "" // Rensa tidigare stats genom att tömma containern
+/* För att skapa en lista med inköpta byggnader så används en funktion som
+ * kopplar till en template i html-filen.
+ * Vi skapar en lista med byggnader och lägger till den i containern.
+ */
+const updatePurchasedBuildings = () => {
+    const buildingList = document.querySelector(".building-list")
+    const template = document.querySelector("#building-item-template")
 
-    // Skapa stats för resurser
-    statsList.appendChild(createStatsCard("Totala resurser", resource))
-    statsList.appendChild(createStatsCard("Resurser per klick", resourcePerClick))
-    statsList.appendChild(createStatsCard("Resurser per sekund", resourcePerSecond))
+    buildingList.innerHTML = "" // rensa för att uppdatera innehållet
 
-    // Skapa stats för köpta byggnader
+    // Vi sorterar listan med köpta byggnader efter start kostnad för att behålla ordningen
+    purchaseHistory.buildings.sort((a, b) => a.cost - b.cost)
+
+    // Köpa byggnader är en array i ett objekt, vi loopar och skpara ny element
+    // utifrån templaten
     purchaseHistory.buildings.forEach((building) => {
-        statsList.appendChild(createStatsCard(`${building.name} (Antal)`, building.count))
-    });
-};
+        const buildingItem = template.content.cloneNode(true).querySelector(".building-item")
+        const icon = buildingItem.querySelector(".icon")
+        icon.textContent = ""
+        for (let i = 0; i < building.count; i++) {
+            icon.textContent += building.icon
+        }
+
+        buildingList.appendChild(buildingItem)
+    })
+}
 
 /* Spelloopen */
-const step = (timestamp) => {
+const gameLoop = (timestamp) => {
     if (pause) {
-        window.requestAnimationFrame(step)
+        window.requestAnimationFrame(gameLoop)
         return
     }
 
-    resourceDisplay.textContent = Math.round(resource);
-    resourcePerSecondDisplay.textContent = Math.round(resourcePerSecond);
+    // uppdatera displayen med resurser och resurser per sekund
+    resourceDisplay.textContent = Math.round(resource)
+    resourcePerSecondDisplay.textContent = Math.round(resourcePerSecond)
 
     // Uppdatera resurser per sekund
     if (timestamp >= lastTimestamp + 1000) {
@@ -201,10 +212,10 @@ const step = (timestamp) => {
         lastTimestamp = timestamp
     }
 
-    updateAchievements();
-    createStatsList();
+    updateAchievements()
+    createStatsList()
 
-    window.requestAnimationFrame(step)
+    window.requestAnimationFrame(gameLoop)
 }
 
 /* Eventlyssnare */
@@ -220,17 +231,15 @@ document.addEventListener("keydown", (e) => {
 })
 
 /* Initiera spelet */
-
 window.addEventListener("load", (event) => {
     const storeBuildingsList = document.querySelector("#building-list")
     buildings.forEach((building) => {
-        storeBuildingsList.appendChild(createStoreCard("building", building))
+        storeBuildingsList.appendChild(createStoreCard(building))
     })
 
-    // Räkna ut resurser per klick och per sekund
-    calculateResourceRates()
-    // Skapa en lista med stats
     createStatsList()
+    updatePurchasedBuildings()
+
     // Starta spelet
-    window.requestAnimationFrame(step)
+    window.requestAnimationFrame(gameLoop)
 })
